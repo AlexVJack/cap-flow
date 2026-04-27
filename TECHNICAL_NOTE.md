@@ -13,7 +13,7 @@ fragile correct decisions near the border also need local reinforcement.
 
 `v9.1 correct_border prob=0.80` improves over the clean `v9 hard_scale` baseline on a `10` seed confirmation with `64` cells and `12` epochs.
 
-This is not a claim that the system beats neural networks or that the mechanism scales broadly. The result is a reproducible local-learning finding with diagnostic decomposition.
+This is not a claim that the system beats neural networks or that the mechanism scales broadly. The result is a reproducible local-learning finding with a 10-seed diagnostic decomposition.
 
 ## System Sketch
 
@@ -153,12 +153,12 @@ border_retention = initially correct border cases that stay correct
 border_loss      = initially correct border cases that become wrong
 ```
 
-Focused decomposition on seeds `8..9`:
+10-seed aggregate decomposition:
 
 | mode | border_repair | border_retention | border_loss |
 |---|---:|---:|---:|
-| `v9 full` | `0.8670` | `0.9629` | `0.0371` |
-| `v9.1 correct_border 0.80` | `0.9180` | `0.9742` | `0.0258` |
+| `v9 full` | `0.8762` | `0.9522` | `0.0478` |
+| `v9.1 correct_border 0.80` | `0.9201` | `0.9714` | `0.0286` |
 
 This supports the working interpretation:
 
@@ -178,7 +178,8 @@ The diagnostic package includes modes for:
 - `event_x4`;
 - `event_only_x2`;
 - `event_only_x4`;
-- `random_sparse`;
+- `all_pixels_init`;
+- `random_sparse` as a backwards-compatible alias for `all_pixels_init`;
 - `correct_border`.
 
 Current read from prior diagnostics:
@@ -204,6 +205,16 @@ Then run:
 ```bash
 PYTHONPATH=lab python lab/v9_diagnostics.py --cells 64 --epochs 12 --seeds 2 --seed-start 0 --modes full,correct_border --correct-border-prob 0.80
 ```
+
+Canonical 10-seed reproduction:
+
+```bash
+PYTHONPATH=lab python lab/v9_diagnostics.py --cells 64 --epochs 12 --seeds 10 --seed-start 0 --modes full,correct_border --correct-border-prob 0.80
+```
+
+This run can take a while on a laptop or small VM. On the capture machine it took roughly 13 minutes for both modes.
+
+Expected output is captured in [`RESULTS_v9_1_digits_10seeds.txt`](RESULTS_v9_1_digits_10seeds.txt).
 
 Chunked confirmation pattern:
 

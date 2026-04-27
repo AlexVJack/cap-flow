@@ -1,0 +1,41 @@
+Canonical v9.1 digits 10-seed reproduction
+==========================================
+
+Environment used for this captured run:
+
+```text
+Python 3.12.3
+numpy 2.4.4
+scikit-learn 1.8.0
+```
+
+Command:
+
+```bash
+PYTHONPATH=lab python lab/v9_diagnostics.py --cells 64 --epochs 12 --seeds 10 --seed-start 0 --modes full,correct_border --correct-border-prob 0.80
+```
+
+The command runs `full` first, then `correct_border`. On the capture machine the combined run takes roughly 13 minutes, so the two modes were also checked separately to avoid terminal timeout.
+
+Expected summary output:
+
+```text
+summary mode=full seeds=10 before_acc=0.5028 peak_acc=0.9208 final_acc=0.9144 final_std=0.0106 final_gap=0.0151 peak_drop=0.0067 border_count=339.2 border_before_acc=0.4923 border_after_acc=0.9165 border_before_gap=0.0002 border_after_gap=0.0150 border_flip=0.4690 border_repair=0.8762 border_retention=0.9522 border_loss=0.0478 mean_event=-0.1084 event_std=0.2239 weights=3520.0 runtime_s=30.90
+class_false_positive mode=full 0:2,1:40,2:23,3:22,4:59,5:19,6:39,7:22,8:50,9:32
+class_false_negative mode=full 0:24,1:68,2:6,3:21,4:10,5:13,6:13,7:30,8:80,9:43
+top_confusions mode=full 8->1:27,1->8:24,9->4:24,8->7:21,1->6:16,9->8:13,1->9:13,0->6:13,6->8:12,3->9:10,3->2:10,0->4:10
+
+summary mode=correct_border seeds=10 before_acc=0.5028 peak_acc=0.9497 final_acc=0.9469 final_std=0.0026 final_gap=0.0282 peak_drop=0.0028 border_count=339.2 border_before_acc=0.4923 border_after_acc=0.9472 border_before_gap=0.0002 border_after_gap=0.0281 border_flip=0.4816 border_repair=0.9201 border_retention=0.9714 border_loss=0.0286 mean_event=-0.2615 event_std=0.3635 weights=3520.0 runtime_s=48.02
+class_false_positive mode=correct_border 0:3,1:44,2:7,3:2,4:21,5:22,6:8,7:22,8:40,9:22
+class_false_negative mode=correct_border 0:11,1:58,2:0,3:5,4:6,5:0,6:11,7:10,8:66,9:24
+top_confusions mode=correct_border 8->1:34,1->9:22,8->7:19,1->8:19,1->5:16,9->8:11,0->4:10,9->4:10,6->8:9,7->1:7,8->6:6,3->2:4
+```
+
+Key read:
+
+```text
+v9 full                  final_acc=0.9144 border_repair=0.8762 border_retention=0.9522 border_loss=0.0478
+v9.1 correct_border 0.80 final_acc=0.9469 border_repair=0.9201 border_retention=0.9714 border_loss=0.0286
+```
+
+This supports the narrow mechanism claim: `correct_border` improves both repair of initially wrong near-border cases and retention of initially correct fragile border cases.

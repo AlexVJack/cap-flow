@@ -45,6 +45,16 @@ Focused confirmation chunk:
 PYTHONPATH=lab python lab/v9_diagnostics.py --cells 64 --epochs 12 --seeds 2 --seed-start 0 --modes full,correct_border --correct-border-prob 0.80
 ```
 
+Canonical 10-seed reproduction:
+
+```bash
+PYTHONPATH=lab python lab/v9_diagnostics.py --cells 64 --epochs 12 --seeds 10 --seed-start 0 --modes full,correct_border --correct-border-prob 0.80
+```
+
+This run can take a while on a laptop or small VM. On the capture machine it took roughly 13 minutes for both modes.
+
+Expected canonical output is captured in [`RESULTS_v9_1_digits_10seeds.txt`](RESULTS_v9_1_digits_10seeds.txt).
+
 Mechanistic checks:
 
 ```bash
@@ -61,6 +71,7 @@ lab/v9_core.py          clean v9 hard-scale control
 lab/v9_diagnostics.py   diagnostic runner and v9.1 correct_border mode
 lab/cap_flow_v9.py      v9 configs and simple probe entry point
 TECHNICAL_NOTE.md       public technical note for the v9 -> v9.1 finding
+RESULTS_*.txt           captured canonical reproduction output
 ```
 
 ## Limitations

@@ -20,7 +20,7 @@ class DiagnosticMode:
     event_scale: float = 1.0
     update_weights: bool = True
     update_events: bool = True
-    random_sparse_init: bool = False
+    all_pixels_init: bool = False
     correct_border_prob: float | None = None
 
 
@@ -64,7 +64,8 @@ MODES = {
     "event_x4": DiagnosticMode("event_x4", event_scale=4.0),
     "event_only_x2": DiagnosticMode("event_only_x2", event_scale=2.0, update_weights=False),
     "event_only_x4": DiagnosticMode("event_only_x4", event_scale=4.0, update_weights=False),
-    "random_sparse": DiagnosticMode("random_sparse", random_sparse_init=True),
+    "all_pixels_init": DiagnosticMode("all_pixels_init", all_pixels_init=True),
+    "random_sparse": DiagnosticMode("random_sparse", all_pixels_init=True),
     "correct_border": DiagnosticMode("correct_border", correct_border_prob=0.50),
 }
 
@@ -90,7 +91,7 @@ def _scaled_config(config: V6Config, mode: DiagnosticMode) -> V6Config:
 
 
 def _build_class_pixels(x_train: np.ndarray, y_train: np.ndarray, config: V6Config, mode: DiagnosticMode) -> dict[int, list[int]]:
-    if mode.random_sparse_init:
+    if mode.all_pixels_init:
         return {cls: list(range(x_train.shape[1])) for cls in config.classes}
     return pick_distinctive_pixels(x_train, y_train, config.classes, top_k=12)
 
