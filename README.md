@@ -79,8 +79,14 @@ RESULTS_*.txt           captured canonical reproduction output
 - This is a small `sklearn digits` proof-of-concept.
 - It does not establish broad scaling behavior.
 - It is not intended as a general ML replacement.
-- The event-score path is currently weaker than the plastic weight path.
+- On digits, the short-horizon accuracy gain appears to be carried mostly by the plastic weight path; the event-score path is live but weaker under the current setup.
 - `v10` is intentionally postponed until diagnostics justify a class-level tissue.
+
+## Current Open Questions
+
+- What does the event-score path contribute beyond plastic weight updates?
+- Does `correct_border` transfer to a second small dataset, or is it digits-specific?
+- If a second-dataset gain appears, does it come from near-border samples or from wider non-border decision-field changes?
 
 ## Status
 

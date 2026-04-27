@@ -190,6 +190,20 @@ Current read from prior diagnostics:
 - `correct_border` is the strongest diagnostic control so far;
 - persistent class-level attractor/confuser dynamics are not yet strong enough to justify opening `v10` as an accuracy patch.
 
+## Open Questions And Next Validation
+
+The current result is intentionally narrow. The next diagnostics should answer three questions before making a broader architecture claim:
+
+```text
+1. What does the event-score path contribute beyond plastic weight updates?
+2. Does correct_border transfer to a second small dataset, or is it digits-specific?
+3. If a second-dataset gain appears, does it come from near-border samples or from wider non-border decision-field changes?
+```
+
+The first point matters because, on digits, the short-horizon accuracy gain appears to be carried mostly by the plastic weight path. Event scores are still part of the signed state-transition dynamics, but their direct contribution remains under investigation.
+
+The second and third points are meant to prevent overfitting the interpretation to `sklearn digits`. A useful next result would show whether `correct_border` is a transferable local learning gate, and whether event-score contribution is dataset-dependent.
+
 ## How To Run
 
 Install dependencies first:
@@ -244,7 +258,7 @@ PYTHONPATH=lab python lab/test_v9_core.py
 - The result is on `sklearn digits`, which is a small testbed.
 - This does not establish broad scaling behavior.
 - The system is not competitive with modern neural baselines as a general ML method.
-- Event scores currently appear weaker than the plastic weight path.
+- On digits, event scores currently appear weaker than the plastic weight path.
 - The `10` seed aggregate is still small by benchmark standards.
 - `v9.1` should not replace the historical `v6` baseline until second-dataset checks exist.
 - `v10` should not be opened merely to raise accuracy.
