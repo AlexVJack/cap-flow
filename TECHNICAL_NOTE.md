@@ -206,7 +206,9 @@ The second and third points are meant to prevent overfitting the interpretation 
 
 ## Preliminary Internal Follow-Up
 
-This section records a small follow-up run after external feedback. It is not yet part of the canonical public reproduction; the canonical reproduced result in this repository remains the `digits` 10-seed result above.
+This section records a small follow-up run after external feedback. It is included for transparency only.
+
+The runner/code for this follow-up is not included in the public canonical reproduction path yet. The public runner in this repository currently reproduces the `digits` 10-seed result above; the `breast_cancer` follow-up was run in the internal research tree.
 
 The follow-up tested a minimal tabular adaptation on `sklearn breast_cancer` and added a non-border decomposition to separate the fixed pre-training near-border subset from the rest of the test set.
 
