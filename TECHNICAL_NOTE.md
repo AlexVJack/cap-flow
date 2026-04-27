@@ -204,6 +204,49 @@ The first point matters because, on digits, the short-horizon accuracy gain appe
 
 The second and third points are meant to prevent overfitting the interpretation to `sklearn digits`. A useful next result would show whether `correct_border` is a transferable local learning gate, and whether event-score contribution is dataset-dependent.
 
+## Preliminary Internal Follow-Up
+
+This section records a small follow-up run after external feedback. It is not yet part of the canonical public reproduction; the canonical reproduced result in this repository remains the `digits` 10-seed result above.
+
+The follow-up tested a minimal tabular adaptation on `sklearn breast_cancer` and added a non-border decomposition to separate the fixed pre-training near-border subset from the rest of the test set.
+
+Configuration:
+
+```text
+dataset: sklearn breast_cancer
+cells: 32
+epochs: 6
+seeds: 10
+correct_border_prob: 0.80
+```
+
+Key summary:
+
+```text
+mode                         final_acc  border_after  non_border_after  non_border_repair
+full                         0.7807     0.9400        0.7289            0.1282
+correct_border               0.8342     0.9400        0.7999            0.3875
+correct_border_weights_only  0.7553     0.9224        0.7011            0.0500
+correct_border_event_only    0.7772     0.9153        0.7326            0.1295
+```
+
+Current read:
+
+```text
+correct_border transfers to breast_cancer in this small diagnostic run.
+The gain over full does not come from the fixed near-border subset.
+It comes from wider non-border repair.
+```
+
+This also sharpens the event-path question. On `digits`, the short-horizon `correct_border` gain is mostly carried by plastic weights. On this `breast_cancer` follow-up, `correct_border_event_only` is stronger than `correct_border_weights_only`, while full `correct_border` remains strongest.
+
+Careful interpretation:
+
+```text
+The event path is not uniformly decorative, but its contribution appears dataset-dependent.
+This remains a small-scale diagnostic result, not a benchmark claim.
+```
+
 ## How To Run
 
 Install dependencies first:
