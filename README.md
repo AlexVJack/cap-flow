@@ -100,8 +100,8 @@ RESULTS_*.txt           captured canonical reproduction output
 ## Current Open Questions
 
 - What does the event-score path contribute beyond plastic weight updates?
-- Does `correct_border` transfer to a second small dataset, or is it digits-specific?
-- If a second-dataset gain appears, does it come from near-border samples or from wider non-border decision-field changes?
+- Does `correct_border` remain positive across additional splits or small datasets?
+- When the gain appears beyond digits, does it come from near-border samples or from wider non-border decision-field changes?
 
 A reproducible exploratory `breast_cancer` follow-up is included in [`RESULTS_breast_cancer_10seeds.txt`](RESULTS_breast_cancer_10seeds.txt). It is not a benchmark claim and does not replace the canonical digits reproduction; see [`TECHNICAL_NOTE.md`](TECHNICAL_NOTE.md).
 
