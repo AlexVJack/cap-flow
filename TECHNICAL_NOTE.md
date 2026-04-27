@@ -180,7 +180,9 @@ The diagnostic package includes modes for:
 - `event_only_x4`;
 - `all_pixels_init`;
 - `random_sparse` as a backwards-compatible alias for `all_pixels_init`;
-- `correct_border`.
+- `correct_border`;
+- `correct_border_weights_only`;
+- `correct_border_event_only`.
 
 Current read from prior diagnostics:
 
@@ -204,11 +206,9 @@ The first point matters because, on digits, the short-horizon accuracy gain appe
 
 The second and third points are meant to prevent overfitting the interpretation to `sklearn digits`. A useful next result would show whether `correct_border` is a transferable local learning gate, and whether event-score contribution is dataset-dependent.
 
-## Preliminary Internal Follow-Up
+## Exploratory Breast Cancer Follow-Up
 
-This section records a small follow-up run after external feedback. It is included for transparency only.
-
-The runner/code for this follow-up is not included in the public canonical reproduction path yet. The public runner in this repository currently reproduces the `digits` 10-seed result above; the `breast_cancer` follow-up was run in the internal research tree.
+This section records a small follow-up run after external feedback. It is public-reproducible, but it remains exploratory. The canonical reproduced result in this repository remains the `digits` 10-seed result above.
 
 The follow-up tested a minimal tabular adaptation on `sklearn breast_cancer` and added a non-border decomposition to separate the fixed pre-training near-border subset from the rest of the test set.
 
@@ -248,6 +248,21 @@ Careful interpretation:
 The event path is not uniformly decorative, but its contribution appears dataset-dependent.
 This remains a small-scale diagnostic result, not a benchmark claim.
 ```
+
+Reproduction command:
+
+```bash
+PYTHONPATH=lab python lab/v9_diagnostics.py \
+  --dataset breast_cancer \
+  --cells 32 \
+  --epochs 6 \
+  --seeds 10 \
+  --seed-start 0 \
+  --modes full,correct_border,correct_border_weights_only,correct_border_event_only \
+  --correct-border-prob 0.80
+```
+
+Expected output is captured in [`RESULTS_breast_cancer_10seeds.txt`](RESULTS_breast_cancer_10seeds.txt).
 
 ## How To Run
 

@@ -7,6 +7,8 @@ from collections import Counter, defaultdict
 from dataclasses import dataclass, replace
 
 import numpy as np
+from sklearn.datasets import load_breast_cancer
+from sklearn.model_selection import train_test_split
 
 from cap_flow_v9 import FULL_CONFIG
 from v4_core import load_digits_subset, pick_distinctive_pixels
@@ -44,6 +46,15 @@ class RunResult:
     border_repair_rate: float
     border_retention_rate: float
     border_loss_rate: float
+    non_border_count: int
+    non_border_before_acc: float
+    non_border_after_acc: float
+    non_border_before_gap: float
+    non_border_after_gap: float
+    non_border_flip_rate: float
+    non_border_repair_rate: float
+    non_border_retention_rate: float
+    non_border_loss_rate: float
     mean_event: float
     event_std: float
     weight_count: int
@@ -67,6 +78,8 @@ MODES = {
     "all_pixels_init": DiagnosticMode("all_pixels_init", all_pixels_init=True),
     "random_sparse": DiagnosticMode("random_sparse", all_pixels_init=True),
     "correct_border": DiagnosticMode("correct_border", correct_border_prob=0.50),
+    "correct_border_weights_only": DiagnosticMode("correct_border_weights_only", update_events=False, correct_border_prob=0.50),
+    "correct_border_event_only": DiagnosticMode("correct_border_event_only", update_weights=False, correct_border_prob=0.50),
 }
 
 
@@ -96,6 +109,27 @@ def _build_class_pixels(x_train: np.ndarray, y_train: np.ndarray, config: V6Conf
     return pick_distinctive_pixels(x_train, y_train, config.classes, top_k=12)
 
 
+def _load_breast_cancer_dataset():
+    data = load_breast_cancer()
+    x = data.data.astype(np.float32)
+    y = data.target.astype(np.int64)
+    mins = x.min(axis=0)
+    ranges = x.max(axis=0) - mins
+    ranges[ranges == 0.0] = 1.0
+    x = (x - mins) / ranges
+    return train_test_split(x, y, test_size=0.2, random_state=42, stratify=y)
+
+
+def _load_dataset(name: str, config: V6Config):
+    if name == "digits":
+        return config, load_digits_subset(config.classes)
+    if name == "breast_cancer":
+        x_train, x_test, y_train, y_test = _load_breast_cancer_dataset()
+        classes = tuple(int(cls) for cls in sorted(np.unique(y_train)))
+        return replace(config, classes=classes), (x_train, x_test, y_train, y_test)
+    raise ValueError(f"unknown dataset: {name}")
+
+
 def _row_gap(row) -> float:
     _, _, label, _, class_signals, _, _ = row
     return class_signals[label] - max(value for cls, value in class_signals.items() if cls != label)
@@ -106,15 +140,14 @@ def _row_correct(row) -> bool:
     return label == prediction
 
 
-def _border_metrics(before_rows, after_rows, threshold: float) -> tuple[int, float, float, float, float, float, float, float, float]:
-    border_indices = [idx for idx, row in enumerate(before_rows) if abs(_row_gap(row)) < threshold]
-    if not border_indices:
+def _subset_metrics(before_rows, after_rows, indices: list[int]) -> tuple[int, float, float, float, float, float, float, float, float]:
+    if not indices:
         return 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
 
-    before_correct = [_row_correct(before_rows[idx]) for idx in border_indices]
-    after_correct = [_row_correct(after_rows[idx]) for idx in border_indices]
-    before_gaps = [_row_gap(before_rows[idx]) for idx in border_indices]
-    after_gaps = [_row_gap(after_rows[idx]) for idx in border_indices]
+    before_correct = [_row_correct(before_rows[idx]) for idx in indices]
+    after_correct = [_row_correct(after_rows[idx]) for idx in indices]
+    before_gaps = [_row_gap(before_rows[idx]) for idx in indices]
+    after_gaps = [_row_gap(after_rows[idx]) for idx in indices]
     flips = sum(int(before != after) for before, after in zip(before_correct, after_correct))
     before_wrong = sum(int(not value) for value in before_correct)
     before_right = sum(int(value) for value in before_correct)
@@ -122,16 +155,23 @@ def _border_metrics(before_rows, after_rows, threshold: float) -> tuple[int, flo
     retained = sum(int(before and after) for before, after in zip(before_correct, after_correct))
     losses = sum(int(before and (not after)) for before, after in zip(before_correct, after_correct))
     return (
-        len(border_indices),
-        sum(before_correct) / len(border_indices),
-        sum(after_correct) / len(border_indices),
+        len(indices),
+        sum(before_correct) / len(indices),
+        sum(after_correct) / len(indices),
         _mean(before_gaps),
         _mean(after_gaps),
-        flips / len(border_indices),
+        flips / len(indices),
         repairs / before_wrong if before_wrong else 0.0,
         retained / before_right if before_right else 0.0,
         losses / before_right if before_right else 0.0,
     )
+
+
+def _border_and_non_border_metrics(before_rows, after_rows, threshold: float):
+    border_indices = [idx for idx, row in enumerate(before_rows) if abs(_row_gap(row)) < threshold]
+    border_set = set(border_indices)
+    non_border_indices = [idx for idx in range(len(before_rows)) if idx not in border_set]
+    return _subset_metrics(before_rows, after_rows, border_indices), _subset_metrics(before_rows, after_rows, non_border_indices)
 
 
 def _class_diagnostics(rows, classes: tuple[int, ...]):
@@ -272,12 +312,12 @@ def _weight_count(cells: list[SignedEventCell]) -> int:
     return sum(len(cell.weights) for cell in cells)
 
 
-def run_seed(mode: DiagnosticMode, seed: int, cell_count: int, epochs: int, control: V9Control, border_threshold: float) -> RunResult:
+def run_seed(mode: DiagnosticMode, seed: int, cell_count: int, epochs: int, control: V9Control, border_threshold: float, dataset: str) -> RunResult:
     started = time.perf_counter()
     random.seed(seed)
     np.random.seed(seed)
     config = _scaled_config(FULL_CONFIG, mode)
-    x_train, x_test, y_train, y_test = load_digits_subset(config.classes)
+    config, (x_train, x_test, y_train, y_test) = _load_dataset(dataset, config)
     class_pixels = _build_class_pixels(x_train, y_train, config, mode)
     cells = build_pool(cell_count=cell_count, class_pixels=class_pixels, config=config, seed=seed)
 
@@ -294,7 +334,7 @@ def run_seed(mode: DiagnosticMode, seed: int, cell_count: int, epochs: int, cont
             peak_epoch = epoch
 
     final_acc, _, final_gap, after_rows = evaluate(cells, x_test, y_test, config)
-    border = _border_metrics(before_rows, after_rows, border_threshold)
+    border, non_border = _border_and_non_border_metrics(before_rows, after_rows, border_threshold)
     false_pos, false_neg, confusions, mean_evidence, wrong_pred_evidence, mean_margin = _class_diagnostics(after_rows, config.classes)
     mean_event, event_std = _event_stats(cells)
     return RunResult(
@@ -316,6 +356,15 @@ def run_seed(mode: DiagnosticMode, seed: int, cell_count: int, epochs: int, cont
         border_repair_rate=border[6],
         border_retention_rate=border[7],
         border_loss_rate=border[8],
+        non_border_count=non_border[0],
+        non_border_before_acc=non_border[1],
+        non_border_after_acc=non_border[2],
+        non_border_before_gap=non_border[3],
+        non_border_after_gap=non_border[4],
+        non_border_flip_rate=non_border[5],
+        non_border_repair_rate=non_border[6],
+        non_border_retention_rate=non_border[7],
+        non_border_loss_rate=non_border[8],
         mean_event=mean_event,
         event_std=event_std,
         weight_count=_weight_count(cells),
@@ -340,8 +389,8 @@ def _format_top_confusions(results: list[RunResult], limit: int) -> str:
     return ",".join(f"{label}->{pred}:{count}" for (label, pred), count in counter.most_common(limit))
 
 
-def print_summary(mode: str, results: list[RunResult], top_confusions: int) -> None:
-    print(
+def print_summary(mode: str, results: list[RunResult], top_confusions: int, include_non_border: bool) -> None:
+    summary = (
         f"summary mode={mode} seeds={len(results)} "
         f"before_acc={_mean([r.before_acc for r in results]):.4f} "
         f"peak_acc={_mean([r.peak_acc for r in results]):.4f} "
@@ -358,12 +407,26 @@ def print_summary(mode: str, results: list[RunResult], top_confusions: int) -> N
         f"border_repair={_mean([r.border_repair_rate for r in results]):.4f} "
         f"border_retention={_mean([r.border_retention_rate for r in results]):.4f} "
         f"border_loss={_mean([r.border_loss_rate for r in results]):.4f} "
+    )
+    if include_non_border:
+        summary += (
+            f"non_border_count={_mean([float(r.non_border_count) for r in results]):.1f} "
+            f"non_border_before_acc={_mean([r.non_border_before_acc for r in results]):.4f} "
+            f"non_border_after_acc={_mean([r.non_border_after_acc for r in results]):.4f} "
+            f"non_border_before_gap={_mean([r.non_border_before_gap for r in results]):.4f} "
+            f"non_border_after_gap={_mean([r.non_border_after_gap for r in results]):.4f} "
+            f"non_border_flip={_mean([r.non_border_flip_rate for r in results]):.4f} "
+            f"non_border_repair={_mean([r.non_border_repair_rate for r in results]):.4f} "
+            f"non_border_retention={_mean([r.non_border_retention_rate for r in results]):.4f} "
+            f"non_border_loss={_mean([r.non_border_loss_rate for r in results]):.4f} "
+        )
+    summary += (
         f"mean_event={_mean([r.mean_event for r in results]):.4f} "
         f"event_std={_mean([r.event_std for r in results]):.4f} "
         f"weights={_mean([float(r.weight_count) for r in results]):.1f} "
-        f"runtime_s={_mean([r.runtime_s for r in results]):.2f}",
-        flush=True,
+        f"runtime_s={_mean([r.runtime_s for r in results]):.2f}"
     )
+    print(summary, flush=True)
     fp = Counter()
     fn = Counter()
     for result in results:
@@ -385,6 +448,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--border-scale", type=float, default=4.0)
     parser.add_argument("--border-threshold", type=float, default=0.02)
     parser.add_argument("--correct-border-prob", type=float, default=0.50)
+    parser.add_argument("--dataset", default="digits", choices=("digits", "breast_cancer"))
     parser.add_argument("--top-confusions", type=int, default=12)
     return parser.parse_args()
 
@@ -396,6 +460,7 @@ def main() -> None:
     print(
         f"v9_diagnostics cells={args.cells} epochs={args.epochs} seeds={args.seeds} "
         f"seed_start={args.seed_start} "
+        f"dataset={args.dataset} "
         f"border_gap={args.border_gap:.4f} border_scale={args.border_scale:.2f} border_threshold={args.border_threshold:.4f}",
         f"correct_border_prob={args.correct_border_prob:.2f}",
         flush=True,
@@ -404,24 +469,30 @@ def main() -> None:
         if name not in MODES:
             raise SystemExit(f"unknown mode: {name}; available={','.join(sorted(MODES))}")
         mode = MODES[name]
-        if name == "correct_border":
+        if mode.correct_border_prob is not None:
             mode = replace(mode, correct_border_prob=args.correct_border_prob)
         results = [
-            run_seed(mode=mode, seed=seed, cell_count=args.cells, epochs=args.epochs, control=control, border_threshold=args.border_threshold)
+            run_seed(mode=mode, seed=seed, cell_count=args.cells, epochs=args.epochs, control=control, border_threshold=args.border_threshold, dataset=args.dataset)
             for seed in range(args.seed_start, args.seed_start + args.seeds)
         ]
+        include_non_border = args.dataset != "digits"
         for result in results:
-            print(
+            run_line = (
                 f"run mode={result.mode} seed={result.seed} before={result.before_acc:.4f} peak={result.peak_acc:.4f} "
                 f"peak_epoch={result.peak_epoch} final={result.final_acc:.4f} gap={result.final_gap:.4f} "
                 f"border_n={result.border_count} border_before={result.border_before_acc:.4f} "
                 f"border_after={result.border_after_acc:.4f} border_repair={result.border_repair_rate:.4f} "
                 f"border_retention={result.border_retention_rate:.4f} border_loss={result.border_loss_rate:.4f} "
-                f"mean_event={result.mean_event:.4f} "
-                f"weights={result.weight_count} runtime_s={result.runtime_s:.2f}",
-                flush=True,
             )
-        print_summary(name, results, args.top_confusions)
+            if include_non_border:
+                run_line += (
+                    f"non_border_n={result.non_border_count} non_border_after={result.non_border_after_acc:.4f} "
+                    f"non_border_repair={result.non_border_repair_rate:.4f} non_border_retention={result.non_border_retention_rate:.4f} "
+                    f"non_border_loss={result.non_border_loss_rate:.4f} "
+                )
+            run_line += f"mean_event={result.mean_event:.4f} weights={result.weight_count} runtime_s={result.runtime_s:.2f}"
+            print(run_line, flush=True)
+        print_summary(name, results, args.top_confusions, include_non_border)
 
 
 if __name__ == "__main__":

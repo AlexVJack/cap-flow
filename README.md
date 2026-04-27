@@ -55,6 +55,21 @@ This run can take a while on a laptop or small VM. On the capture machine it too
 
 Expected canonical output is captured in [`RESULTS_v9_1_digits_10seeds.txt`](RESULTS_v9_1_digits_10seeds.txt).
 
+Exploratory second-dataset follow-up:
+
+```bash
+PYTHONPATH=lab python lab/v9_diagnostics.py \
+  --dataset breast_cancer \
+  --cells 32 \
+  --epochs 6 \
+  --seeds 10 \
+  --seed-start 0 \
+  --modes full,correct_border,correct_border_weights_only,correct_border_event_only \
+  --correct-border-prob 0.80
+```
+
+This follow-up is public-reproducible but remains exploratory, not a benchmark claim. Expected output is captured in [`RESULTS_breast_cancer_10seeds.txt`](RESULTS_breast_cancer_10seeds.txt).
+
 Mechanistic checks:
 
 ```bash
@@ -88,7 +103,7 @@ RESULTS_*.txt           captured canonical reproduction output
 - Does `correct_border` transfer to a second small dataset, or is it digits-specific?
 - If a second-dataset gain appears, does it come from near-border samples or from wider non-border decision-field changes?
 
-A preliminary internal `breast_cancer` follow-up suggests that `correct_border` can transfer beyond digits, and that the second-dataset gain comes from wider non-border repair rather than the fixed near-border subset. This follow-up is recorded for transparency, but its runner/code is not included in the public canonical reproduction path yet; see [`TECHNICAL_NOTE.md`](TECHNICAL_NOTE.md).
+A preliminary exploratory `breast_cancer` follow-up suggests that `correct_border` can transfer beyond digits, and that the second-dataset gain comes from wider non-border repair rather than the fixed near-border subset. This follow-up is public-reproducible but not canonical; see [`TECHNICAL_NOTE.md`](TECHNICAL_NOTE.md).
 
 ## Status
 

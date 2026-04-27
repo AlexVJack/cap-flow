@@ -1,0 +1,60 @@
+Exploratory breast_cancer 10-seed follow-up
+===========================================
+
+Environment used for this captured run:
+
+```text
+Python 3.12.3
+numpy 2.4.4
+scikit-learn 1.8.0
+```
+
+Command:
+
+```bash
+PYTHONPATH=lab python lab/v9_diagnostics.py \
+  --dataset breast_cancer \
+  --cells 32 \
+  --epochs 6 \
+  --seeds 10 \
+  --seed-start 0 \
+  --modes full,correct_border,correct_border_weights_only,correct_border_event_only \
+  --correct-border-prob 0.80
+```
+
+This is an exploratory second-dataset diagnostic, not a benchmark claim. The canonical public reproduction remains the `digits` 10-seed result.
+
+Expected summary output:
+
+```text
+summary mode=full seeds=10 before_acc=0.6509 peak_acc=0.7807 final_acc=0.7807 final_std=0.0184 final_gap=0.0347 peak_drop=0.0018 border_count=28.1 border_before_acc=0.5053 border_after_acc=0.9400 border_before_gap=-0.0001 border_after_gap=0.0225 border_flip=0.5342 border_repair=0.9799 border_retention=0.9033 border_loss=0.0967 non_border_count=85.9 non_border_before_acc=0.6988 non_border_after_acc=0.7289 non_border_before_gap=0.0387 non_border_after_gap=0.0388 non_border_flip=0.0488 non_border_repair=0.1282 non_border_retention=0.9866 non_border_loss=0.0134 mean_event=-0.0076 event_std=0.0652 weights=960.0 runtime_s=2.27
+class_false_positive mode=full 0:225,1:25
+class_false_negative mode=full 0:25,1:225
+top_confusions mode=full 1->0:225,0->1:25
+
+summary mode=correct_border seeds=10 before_acc=0.6509 peak_acc=0.8342 final_acc=0.8342 final_std=0.0149 final_gap=0.0378 peak_drop=0.0000 border_count=28.1 border_before_acc=0.5053 border_after_acc=0.9400 border_before_gap=-0.0001 border_after_gap=0.0293 border_flip=0.5342 border_repair=0.9799 border_retention=0.9033 border_loss=0.0967 non_border_count=85.9 non_border_before_acc=0.6988 non_border_after_acc=0.7999 non_border_before_gap=0.0387 non_border_after_gap=0.0406 non_border_flip=0.1337 non_border_repair=0.3875 non_border_retention=0.9764 non_border_loss=0.0236 mean_event=-0.0069 event_std=0.0911 weights=960.0 runtime_s=2.69
+class_false_positive mode=correct_border 0:158,1:31
+class_false_negative mode=correct_border 0:31,1:158
+top_confusions mode=correct_border 1->0:158,0->1:31
+
+summary mode=correct_border_weights_only seeds=10 before_acc=0.6509 peak_acc=0.7535 final_acc=0.7553 final_std=0.0144 final_gap=0.0317 peak_drop=0.0000 border_count=28.1 border_before_acc=0.5053 border_after_acc=0.9224 border_before_gap=-0.0001 border_after_gap=0.0173 border_flip=0.5166 border_repair=0.9432 border_retention=0.9033 border_loss=0.0967 non_border_count=85.9 non_border_before_acc=0.6988 non_border_after_acc=0.7011 non_border_before_gap=0.0387 non_border_after_gap=0.0364 non_border_flip=0.0301 non_border_repair=0.0500 non_border_retention=0.9798 non_border_loss=0.0202 mean_event=0.0000 event_std=0.0000 weights=960.0 runtime_s=2.80
+class_false_positive mode=correct_border_weights_only 0:250,1:29
+class_false_negative mode=correct_border_weights_only 0:29,1:250
+top_confusions mode=correct_border_weights_only 1->0:250,0->1:29
+
+summary mode=correct_border_event_only seeds=10 before_acc=0.6509 peak_acc=0.7746 final_acc=0.7772 final_std=0.0242 final_gap=0.0381 peak_drop=0.0000 border_count=28.1 border_before_acc=0.5053 border_after_acc=0.9153 border_before_gap=-0.0001 border_after_gap=0.0231 border_flip=0.5095 border_repair=0.9272 border_retention=0.9033 border_loss=0.0967 non_border_count=85.9 non_border_before_acc=0.6988 non_border_after_acc=0.7326 non_border_before_gap=0.0387 non_border_after_gap=0.0430 non_border_flip=0.0431 non_border_repair=0.1295 non_border_retention=0.9932 non_border_loss=0.0068 mean_event=-0.0074 event_std=0.1093 weights=256.0 runtime_s=1.13
+class_false_positive mode=correct_border_event_only 0:233,1:21
+class_false_negative mode=correct_border_event_only 0:21,1:233
+top_confusions mode=correct_border_event_only 1->0:233,0->1:21
+```
+
+Key read:
+
+```text
+full                         final_acc=0.7807 border_after=0.9400 non_border_after=0.7289 non_border_repair=0.1282
+correct_border               final_acc=0.8342 border_after=0.9400 non_border_after=0.7999 non_border_repair=0.3875
+correct_border_weights_only  final_acc=0.7553 border_after=0.9224 non_border_after=0.7011 non_border_repair=0.0500
+correct_border_event_only    final_acc=0.7772 border_after=0.9153 non_border_after=0.7326 non_border_repair=0.1295
+```
+
+This supports the narrow exploratory read: `correct_border` transfers to this small second dataset, and the gain over `full` comes from wider non-border repair rather than the fixed pre-training near-border subset.
