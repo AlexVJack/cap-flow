@@ -210,7 +210,7 @@ The second and third points are meant to prevent overfitting the interpretation 
 
 This section records a small follow-up run after external feedback. It is public-reproducible, but it remains exploratory. The canonical reproduced result in this repository remains the `digits` 10-seed result above.
 
-The follow-up tested a minimal tabular adaptation on `sklearn breast_cancer` and added a non-border decomposition to separate the fixed pre-training near-border subset from the rest of the test set.
+The follow-up tested a minimal tabular adaptation on `sklearn breast_cancer` and added a non-border decomposition to separate the fixed pre-training near-border subset from the rest of the test set. Min-max scaling is fit on the training split only, then applied to the held-out test split.
 
 Configuration:
 
@@ -226,10 +226,10 @@ Key summary:
 
 ```text
 mode                         final_acc  border_after  non_border_after  non_border_repair
-full                         0.7807     0.9400        0.7289            0.1282
-correct_border               0.8342     0.9400        0.7999            0.3875
-correct_border_weights_only  0.7553     0.9224        0.7011            0.0500
-correct_border_event_only    0.7772     0.9153        0.7326            0.1295
+full                         0.7500     1.0000        0.6802            0.2871
+correct_border               0.8035     1.0000        0.7488            0.4655
+correct_border_weights_only  0.7053     1.0000        0.6228            0.1407
+correct_border_event_only    0.7175     0.9876        0.6419            0.1698
 ```
 
 Current read:
@@ -320,7 +320,7 @@ PYTHONPATH=lab python lab/test_v9_core.py
 - The system is not competitive with modern neural baselines as a general ML method.
 - On digits, event scores currently appear weaker than the plastic weight path.
 - The `10` seed aggregate is still small by benchmark standards.
-- `v9.1` should not replace the historical `v6` baseline until second-dataset checks exist.
+- `v9.1` should remain a frontier candidate until second-dataset checks are reproduced across additional splits or small datasets.
 - `v10` should not be opened merely to raise accuracy.
 
 ## Why v10 Is Still Postponed

@@ -103,7 +103,7 @@ RESULTS_*.txt           captured canonical reproduction output
 - Does `correct_border` transfer to a second small dataset, or is it digits-specific?
 - If a second-dataset gain appears, does it come from near-border samples or from wider non-border decision-field changes?
 
-A preliminary exploratory `breast_cancer` follow-up suggests that `correct_border` can transfer beyond digits, and that the second-dataset gain comes from wider non-border repair rather than the fixed near-border subset. This follow-up is public-reproducible but not canonical; see [`TECHNICAL_NOTE.md`](TECHNICAL_NOTE.md).
+A reproducible exploratory `breast_cancer` follow-up is included in [`RESULTS_breast_cancer_10seeds.txt`](RESULTS_breast_cancer_10seeds.txt). It is not a benchmark claim and does not replace the canonical digits reproduction; see [`TECHNICAL_NOTE.md`](TECHNICAL_NOTE.md).
 
 ## Status
 

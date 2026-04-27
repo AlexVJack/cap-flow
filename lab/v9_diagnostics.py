@@ -113,11 +113,13 @@ def _load_breast_cancer_dataset():
     data = load_breast_cancer()
     x = data.data.astype(np.float32)
     y = data.target.astype(np.int64)
-    mins = x.min(axis=0)
-    ranges = x.max(axis=0) - mins
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42, stratify=y)
+    mins = x_train.min(axis=0)
+    ranges = x_train.max(axis=0) - mins
     ranges[ranges == 0.0] = 1.0
-    x = (x - mins) / ranges
-    return train_test_split(x, y, test_size=0.2, random_state=42, stratify=y)
+    x_train = (x_train - mins) / ranges
+    x_test = (x_test - mins) / ranges
+    return x_train, x_test, y_train, y_test
 
 
 def _load_dataset(name: str, config: V6Config):

@@ -24,37 +24,39 @@ PYTHONPATH=lab python lab/v9_diagnostics.py \
 
 This is an exploratory second-dataset diagnostic, not a benchmark claim. The canonical public reproduction remains the `digits` 10-seed result.
 
+For `breast_cancer`, min-max scaling is fit on the training split only and then applied to the held-out test split.
+
 Expected summary output:
 
 ```text
-summary mode=full seeds=10 before_acc=0.6509 peak_acc=0.7807 final_acc=0.7807 final_std=0.0184 final_gap=0.0347 peak_drop=0.0018 border_count=28.1 border_before_acc=0.5053 border_after_acc=0.9400 border_before_gap=-0.0001 border_after_gap=0.0225 border_flip=0.5342 border_repair=0.9799 border_retention=0.9033 border_loss=0.0967 non_border_count=85.9 non_border_before_acc=0.6988 non_border_after_acc=0.7289 non_border_before_gap=0.0387 non_border_after_gap=0.0388 non_border_flip=0.0488 non_border_repair=0.1282 non_border_retention=0.9866 non_border_loss=0.0134 mean_event=-0.0076 event_std=0.0652 weights=960.0 runtime_s=2.27
-class_false_positive mode=full 0:225,1:25
-class_false_negative mode=full 0:25,1:225
-top_confusions mode=full 1->0:225,0->1:25
+summary mode=full seeds=10 before_acc=0.5579 peak_acc=0.7482 final_acc=0.7500 final_std=0.0098 final_gap=0.0337 peak_drop=0.0009 border_count=24.9 border_before_acc=0.4814 border_after_acc=1.0000 border_before_gap=-0.0011 border_after_gap=0.0344 border_flip=0.5186 border_repair=1.0000 border_retention=1.0000 border_loss=0.0000 non_border_count=89.1 non_border_before_acc=0.5791 non_border_after_acc=0.6802 non_border_before_gap=0.0331 non_border_after_gap=0.0335 non_border_flip=0.1414 non_border_repair=0.2871 non_border_retention=0.9652 non_border_loss=0.0348 mean_event=-0.0100 event_std=0.0846 weights=960.0 runtime_s=2.53
+class_false_positive mode=full 0:267,1:18
+class_false_negative mode=full 0:18,1:267
+top_confusions mode=full 1->0:267,0->1:18
 
-summary mode=correct_border seeds=10 before_acc=0.6509 peak_acc=0.8342 final_acc=0.8342 final_std=0.0149 final_gap=0.0378 peak_drop=0.0000 border_count=28.1 border_before_acc=0.5053 border_after_acc=0.9400 border_before_gap=-0.0001 border_after_gap=0.0293 border_flip=0.5342 border_repair=0.9799 border_retention=0.9033 border_loss=0.0967 non_border_count=85.9 non_border_before_acc=0.6988 non_border_after_acc=0.7999 non_border_before_gap=0.0387 non_border_after_gap=0.0406 non_border_flip=0.1337 non_border_repair=0.3875 non_border_retention=0.9764 non_border_loss=0.0236 mean_event=-0.0069 event_std=0.0911 weights=960.0 runtime_s=2.69
-class_false_positive mode=correct_border 0:158,1:31
-class_false_negative mode=correct_border 0:31,1:158
-top_confusions mode=correct_border 1->0:158,0->1:31
+summary mode=correct_border seeds=10 before_acc=0.5579 peak_acc=0.8035 final_acc=0.8035 final_std=0.0172 final_gap=0.0367 peak_drop=0.0000 border_count=24.9 border_before_acc=0.4814 border_after_acc=1.0000 border_before_gap=-0.0011 border_after_gap=0.0435 border_flip=0.5186 border_repair=1.0000 border_retention=1.0000 border_loss=0.0000 non_border_count=89.1 non_border_before_acc=0.5791 non_border_after_acc=0.7488 non_border_before_gap=0.0331 non_border_after_gap=0.0348 non_border_flip=0.2235 non_border_repair=0.4655 non_border_retention=0.9535 non_border_loss=0.0465 mean_event=-0.0086 event_std=0.1096 weights=960.0 runtime_s=2.85
+class_false_positive mode=correct_border 0:200,1:24
+class_false_negative mode=correct_border 0:24,1:200
+top_confusions mode=correct_border 1->0:200,0->1:24
 
-summary mode=correct_border_weights_only seeds=10 before_acc=0.6509 peak_acc=0.7535 final_acc=0.7553 final_std=0.0144 final_gap=0.0317 peak_drop=0.0000 border_count=28.1 border_before_acc=0.5053 border_after_acc=0.9224 border_before_gap=-0.0001 border_after_gap=0.0173 border_flip=0.5166 border_repair=0.9432 border_retention=0.9033 border_loss=0.0967 non_border_count=85.9 non_border_before_acc=0.6988 non_border_after_acc=0.7011 non_border_before_gap=0.0387 non_border_after_gap=0.0364 non_border_flip=0.0301 non_border_repair=0.0500 non_border_retention=0.9798 non_border_loss=0.0202 mean_event=0.0000 event_std=0.0000 weights=960.0 runtime_s=2.80
-class_false_positive mode=correct_border_weights_only 0:250,1:29
-class_false_negative mode=correct_border_weights_only 0:29,1:250
-top_confusions mode=correct_border_weights_only 1->0:250,0->1:29
+summary mode=correct_border_weights_only seeds=10 before_acc=0.5579 peak_acc=0.7061 final_acc=0.7053 final_std=0.0112 final_gap=0.0292 peak_drop=0.0009 border_count=24.9 border_before_acc=0.4814 border_after_acc=1.0000 border_before_gap=-0.0011 border_after_gap=0.0275 border_flip=0.5186 border_repair=1.0000 border_retention=1.0000 border_loss=0.0000 non_border_count=89.1 non_border_before_acc=0.5791 non_border_after_acc=0.6228 non_border_before_gap=0.0331 non_border_after_gap=0.0297 non_border_flip=0.0751 non_border_repair=0.1407 non_border_retention=0.9730 non_border_loss=0.0270 mean_event=0.0000 event_std=0.0000 weights=960.0 runtime_s=2.97
+class_false_positive mode=correct_border_weights_only 0:322,1:14
+class_false_negative mode=correct_border_weights_only 0:14,1:322
+top_confusions mode=correct_border_weights_only 1->0:322,0->1:14
 
-summary mode=correct_border_event_only seeds=10 before_acc=0.6509 peak_acc=0.7746 final_acc=0.7772 final_std=0.0242 final_gap=0.0381 peak_drop=0.0000 border_count=28.1 border_before_acc=0.5053 border_after_acc=0.9153 border_before_gap=-0.0001 border_after_gap=0.0231 border_flip=0.5095 border_repair=0.9272 border_retention=0.9033 border_loss=0.0967 non_border_count=85.9 non_border_before_acc=0.6988 non_border_after_acc=0.7326 non_border_before_gap=0.0387 non_border_after_gap=0.0430 non_border_flip=0.0431 non_border_repair=0.1295 non_border_retention=0.9932 non_border_loss=0.0068 mean_event=-0.0074 event_std=0.1093 weights=256.0 runtime_s=1.13
-class_false_positive mode=correct_border_event_only 0:233,1:21
-class_false_negative mode=correct_border_event_only 0:21,1:233
-top_confusions mode=correct_border_event_only 1->0:233,0->1:21
+summary mode=correct_border_event_only seeds=10 before_acc=0.5579 peak_acc=0.7184 final_acc=0.7175 final_std=0.0140 final_gap=0.0365 peak_drop=0.0009 border_count=24.9 border_before_acc=0.4814 border_after_acc=0.9876 border_before_gap=-0.0011 border_after_gap=0.0286 border_flip=0.5063 border_repair=0.9761 border_retention=1.0000 border_loss=0.0000 non_border_count=89.1 non_border_before_acc=0.5791 non_border_after_acc=0.6419 non_border_before_gap=0.0331 non_border_after_gap=0.0387 non_border_flip=0.0808 non_border_repair=0.1698 non_border_retention=0.9846 non_border_loss=0.0154 mean_event=-0.0106 event_std=0.1315 weights=256.0 runtime_s=1.16
+class_false_positive mode=correct_border_event_only 0:314,1:8
+class_false_negative mode=correct_border_event_only 0:8,1:314
+top_confusions mode=correct_border_event_only 1->0:314,0->1:8
 ```
 
 Key read:
 
 ```text
-full                         final_acc=0.7807 border_after=0.9400 non_border_after=0.7289 non_border_repair=0.1282
-correct_border               final_acc=0.8342 border_after=0.9400 non_border_after=0.7999 non_border_repair=0.3875
-correct_border_weights_only  final_acc=0.7553 border_after=0.9224 non_border_after=0.7011 non_border_repair=0.0500
-correct_border_event_only    final_acc=0.7772 border_after=0.9153 non_border_after=0.7326 non_border_repair=0.1295
+full                         final_acc=0.7500 border_after=1.0000 non_border_after=0.6802 non_border_repair=0.2871
+correct_border               final_acc=0.8035 border_after=1.0000 non_border_after=0.7488 non_border_repair=0.4655
+correct_border_weights_only  final_acc=0.7053 border_after=1.0000 non_border_after=0.6228 non_border_repair=0.1407
+correct_border_event_only    final_acc=0.7175 border_after=0.9876 non_border_after=0.6419 non_border_repair=0.1698
 ```
 
 This supports the narrow exploratory read: `correct_border` transfers to this small second dataset, and the gain over `full` comes from wider non-border repair rather than the fixed pre-training near-border subset.
